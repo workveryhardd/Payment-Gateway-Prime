@@ -1,0 +1,10 @@
+{
+  "tx_hash": "SAMPLE_ETH_HASH_456",
+  "amount": "100.0",
+  "token": "USDT",
+  "network": "ERC20",
+  "confirmations": 5,
+  "to": "0xExampleERC20Address00000000000000000000",
+  "from": "0xSenderExample0000000000000000000000"
+}
+

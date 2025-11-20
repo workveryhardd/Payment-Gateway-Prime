@@ -1,0 +1,8 @@
+{
+  "btc": "bc1qexamplebtcaddress000000000000000000",
+  "eth": "0xExampleEthereumAddress0000000000000000000000",
+  "usdt_trc20": "TYExampleTronAddress0000000000000000",
+  "usdt_erc20": "0xExampleERC20Address00000000000000000000",
+  "usdt_bep20": "0xExampleBSCAddress000000000000000000000"
+}
+

@@ -1,0 +1,1 @@
+suppoerts multiple payment methods

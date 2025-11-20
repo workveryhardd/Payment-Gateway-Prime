@@ -1,0 +1,10 @@
+{
+  "txid": "SAMPLE_TRX_HASH_123",
+  "amount": "50.0",
+  "token": "USDT",
+  "network": "TRC20",
+  "confirmations": 3,
+  "to": "TYExampleTronAddress0000000000000000",
+  "from": "TRX_SENDER_ADDRESS"
+}
+

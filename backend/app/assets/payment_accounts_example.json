@@ -1,0 +1,51 @@
+{
+  "upi": [
+    {
+      "identifier_name": "id1",
+      "upi_id": "yourupi1@bank",
+      "payee_name": "Business Account 1",
+      "qr_location": "backend/app/assets/qr1.jpg"
+    },
+    {
+      "identifier_name": "id2",
+      "upi_id": "yourupi2@bank",
+      "payee_name": "Business Account 2",
+      "qr_location": "backend/app/assets/qr2.jpg"
+    }
+  ],
+  "bank": [
+    {
+      "identifier_name": "main_bank",
+      "account_number": "123456789012",
+      "ifsc": "BANK0001234",
+      "bank_name": "Bank Name",
+      "branch": "Branch Name"
+    },
+    {
+      "identifier_name": "backup_bank",
+      "account_number": "987654321098",
+      "ifsc": "BANK0005678",
+      "bank_name": "Another Bank",
+      "branch": "Another Branch"
+    }
+  ],
+  "crypto": [
+    {
+      "identifier_name": "main_crypto",
+      "btc": "bc1qexamplebtcaddress000000000000000000",
+      "eth": "0xExampleEthereumAddress0000000000000000000000",
+      "usdt_trc20": "TYExampleTronAddress0000000000000000",
+      "usdt_erc20": "0xExampleERC20Address00000000000000000000",
+      "usdt_bep20": "0xExampleBSCAddress000000000000000000000"
+    },
+    {
+      "identifier_name": "backup_crypto",
+      "btc": "bc1qbackupbtcaddress000000000000000000",
+      "eth": "0xBackupEthereumAddress0000000000000000000000",
+      "usdt_trc20": "TYBackupTronAddress0000000000000000",
+      "usdt_erc20": "0xBackupERC20Address00000000000000000000",
+      "usdt_bep20": "0xBackupBSCAddress000000000000000000000"
+    }
+  ]
+}
+

@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
-from sqlalchemy.orm import Session
 from typing import List, Optional
-from app.core.database import get_db
 from app.core.security import decode_access_token
-from app.models.deposit import Deposit
+from app.models.deposit import DepositStatus
 from app.schemas.deposit import DepositCreate, DepositSubmitProof, DepositResponse
 from app.utils.logger import logger
+from app.storage import repository
 
 router = APIRouter()
 
@@ -38,74 +37,47 @@ get_current_user_id = get_current_user_id_bypass
 @router.post("/create", response_model=DepositResponse)
 def create_deposit(
     deposit_data: DepositCreate,
-    db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
 ):
-    
-    new_deposit = Deposit(
+    new_deposit = repository.create_deposit_record(
         user_id=user_id,
         method=deposit_data.method,
         amount=deposit_data.amount,
-        status="PENDING"
     )
-    db.add(new_deposit)
-    db.commit()
-    db.refresh(new_deposit)
-    
-    logger.info(f"Created deposit {new_deposit.id} for user {user_id}")
+    logger.info(f"Created deposit {new_deposit['id']} for user {user_id}")
     return new_deposit
 
 @router.post("/submit-proof", response_model=DepositResponse)
 def submit_proof(
     proof_data: DepositSubmitProof,
-    db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
 ):
-    
-    deposit = db.query(Deposit).filter(Deposit.id == proof_data.deposit_id).first()
+    deposit = repository.get_deposit(proof_data.deposit_id)
     if not deposit:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deposit not found"
         )
     
-    # AUTHENTICATION DISABLED - Commented out user check
-    # if deposit.user_id != user_id:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Not authorized to update this deposit"
-    #     )
-    
-    if deposit.status != "PENDING":
+    if deposit["status"] != DepositStatus.PENDING.value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Deposit is not in PENDING status"
         )
     
-    # Check if UTR/hash is already used
-    existing = db.query(Deposit).filter(
-        Deposit.utr_or_hash == proof_data.utr_or_hash,
-        Deposit.id != deposit.id
-    ).first()
-    if existing:
+    if repository.utr_exists(proof_data.utr_or_hash, exclude_deposit_id=deposit["id"]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="UTR/hash already used"
         )
     
-    deposit.utr_or_hash = proof_data.utr_or_hash
-    db.commit()
-    db.refresh(deposit)
-    
-    logger.info(f"Updated deposit {deposit.id} with UTR/hash")
-    return deposit
+    updated = repository.update_deposit(deposit["id"], utr_or_hash=proof_data.utr_or_hash)
+    logger.info(f"Updated deposit {deposit['id']} with UTR/hash")
+    return updated
 
 @router.get("/my", response_model=List[DepositResponse])
 def get_my_deposits(
-    db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id)
 ):
-    
-    deposits = db.query(Deposit).filter(Deposit.user_id == user_id).order_by(Deposit.created_at.desc()).all()
-    return deposits
+    return repository.list_deposits(user_id=user_id)
 

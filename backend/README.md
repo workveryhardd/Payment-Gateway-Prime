@@ -1,6 +1,6 @@
 # Deposit System Backend
 
-A FastAPI-based backend for managing deposits with automatic ledger-based verification.
+A FastAPI-based backend for managing deposits across UPI, bank transfer, crypto, and credit/debit card flows with automatic ledger-based verification.
 
 ## Setup
 
@@ -28,31 +28,15 @@ cp .env.example .env
 Edit `.env` with your configuration:
 
 ```
-DATABASE_URL=sqlite:///./deposit_db.sqlite
 REDIS_URL=redis://localhost:6379/0
 SECRET_KEY=your-secret-key-change-in-production-min-32-chars
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+DATA_FILE_PATH=backend/data/data_store.json
 ```
 
-**Note:** SQLite is already configured by default. You only need to update `SECRET_KEY` with a secure random string.
+**No database setup is required anymore.** All records (users, deposits, payment accounts, incoming ledger) are persisted inside the JSON file defined by `DATA_FILE_PATH`. The file and its parent directory are created automatically on first write.
 
-### 4. Setup Database
-
-**SQLite is used by default** - no additional setup needed! The database file (`deposit_db.sqlite`) will be created automatically when you run migrations.
-
-If you want to use a different database file location, update `DATABASE_URL` in `.env`:
-- `sqlite:///./deposit_db.sqlite` - creates file in current directory
-- `sqlite:///./data/deposit_db.sqlite` - creates file in `data/` subdirectory
-- `sqlite:////absolute/path/to/deposit_db.sqlite` - absolute path
-
-### 5. Run Migrations
-
-```bash
-alembic revision --autogenerate -m "Initial migration"
-alembic upgrade head
-```
-
-### 6. Run the Server
+### 4. Run the Server
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -91,13 +75,13 @@ backend/
 ├── app/
 │   ├── api/          # API endpoints
 │   ├── core/         # Core configuration
-│   ├── models/       # Database models
+│   ├── models/       # Domain enums shared across app
 │   ├── schemas/      # Pydantic schemas
 │   ├── services/     # Business logic
+│   ├── storage/      # File-based JSON data store
 │   ├── parsers/      # Email/SMS/Crypto parsers
 │   ├── utils/        # Utilities
 │   └── assets/       # Static assets and samples
-├── alembic/          # Database migrations
 └── requirements.txt
 ```
 

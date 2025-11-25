@@ -1,48 +1,21 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import FileResponse
 from pathlib import Path
-from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.models.payment_account import PaymentAccount, PaymentAccountType, PaymentAccountStatus
+from app.storage import repository
 
 router = APIRouter()
 
-def get_active_payment_accounts(db: Session):
-    """Get active payment accounts from database"""
-    active_accounts = db.query(PaymentAccount).filter(
-        PaymentAccount.is_active == True,
-        PaymentAccount.status == PaymentAccountStatus.ACTIVE
-    ).all()
-    
-    result = {
-        "upi": None,
-        "bank": None,
-        "crypto": None
-    }
-    
-    for account in active_accounts:
-        if account.account_type == PaymentAccountType.UPI:
-            result["upi"] = {
-                "identifier_name": account.identifier_name,
-                **account.details
-            }
-        elif account.account_type == PaymentAccountType.BANK:
-            result["bank"] = {
-                "identifier_name": account.identifier_name,
-                **account.details
-            }
-        elif account.account_type == PaymentAccountType.CRYPTO:
-            result["crypto"] = {
-                "identifier_name": account.identifier_name,
-                **account.details
-            }
-    
-    return result
+def get_active_payment_accounts():
+    """Get active payment accounts from JSON store."""
+    return repository.get_active_accounts()
 
 @router.get("/payment-instructions")
-def get_payment_instructions(db: Session = Depends(get_db)):
+def get_payment_instructions():
     """Get active payment instructions for all methods"""
-    active_accounts = get_active_payment_accounts(db)
+    active_accounts = get_active_payment_accounts()
+    
+    # Ensure all expected keys exist
+    active_accounts.setdefault("card", None)
     
     # Fallback to defaults if no active accounts
     if not active_accounts["upi"]:
@@ -70,20 +43,23 @@ def get_payment_instructions(db: Session = Depends(get_db)):
             "usdt_bep20": "0xExampleBSCAddress000000000000000000000",
             "identifier_name": "default"
         }
+
+    if not active_accounts["card"]:
+        active_accounts["card"] = {
+            "provider": "Card Gateway",
+            "instructions": "Share payment link sent by support.",
+            "identifier_name": "default"
+        }
     
     return active_accounts
 
 @router.get("/qr-code")
-def get_qr_code(db: Session = Depends(get_db)):
+def get_qr_code():
     """Serve QR code image from active UPI account"""
-    active_upi = db.query(PaymentAccount).filter(
-        PaymentAccount.account_type == PaymentAccountType.UPI,
-        PaymentAccount.is_active == True,
-        PaymentAccount.status == PaymentAccountStatus.ACTIVE
-    ).first()
+    active_upi = repository.get_active_accounts().get("upi")
     
-    if active_upi and active_upi.details.get("qr_location"):
-        qr_location = active_upi.details["qr_location"]
+    if active_upi and active_upi.get("qr_location"):
+        qr_location = active_upi["qr_location"]
         # Handle both absolute and relative paths
         if Path(qr_location).is_absolute():
             qr_path = Path(qr_location)

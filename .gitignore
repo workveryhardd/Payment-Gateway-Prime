@@ -63,6 +63,7 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+backend/data/data_store.json
 
 # Logs
 *.log

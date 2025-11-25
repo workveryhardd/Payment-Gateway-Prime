@@ -22,24 +22,33 @@ export default function DepositPage() {
   }, []);
 
   const fetchInstructions = async () => {
-    // In a real app, these would come from the backend API
-    // For now, we'll use placeholder data
-    setInstructions({
-      upi: { id: 'yourupi@bank', name: 'Your Business Name' },
-      bank: {
-        account: '123456789012',
-        ifsc: 'BANK0001234',
-        bank: 'Bank Name',
-        branch: 'Branch Name',
-      },
-      crypto: {
-        btc: 'bc1qexamplebtcaddress000000000000000000',
-        eth: '0xExampleEthereumAddress0000000000000000000000',
-        usdt_trc20: 'TYExampleTronAddress0000000000000000',
-        usdt_erc20: '0xExampleERC20Address00000000000000000000',
-        usdt_bep20: '0xExampleBSCAddress000000000000000000000',
-      },
-    });
+    try {
+      const response = await api.get('/payment/payment-instructions');
+      setInstructions(response.data);
+    } catch (error) {
+      console.error('Failed to load payment instructions, using defaults', error);
+      setInstructions({
+        upi: { upi_id: 'yourupi@bank', payee_name: 'Your Business Name' },
+        bank: {
+          account_number: '123456789012',
+          ifsc: 'BANK0001234',
+          bank_name: 'Bank Name',
+          branch: 'Branch Name',
+        },
+        crypto: {
+          btc: 'bc1qexamplebtcaddress000000000000000000',
+          eth: '0xExampleEthereumAddress0000000000000000000000',
+          usdt_trc20: 'TYExampleTronAddress0000000000000000',
+          usdt_erc20: '0xExampleERC20Address00000000000000000000',
+          usdt_bep20: '0xExampleBSCAddress000000000000000000000',
+        },
+        card: {
+          provider: 'Card Gateway',
+          instructions: 'Use the shared payment link to pay via card.',
+          support_contact: 'payments@example.com',
+        },
+      });
+    }
   };
 
   const handleDepositCreated = (deposit: Deposit) => {
@@ -163,6 +172,33 @@ export default function DepositPage() {
                       <p className="font-semibold">USDT (BEP20):</p>
                       <p className="font-mono text-sm break-all">{instructions.crypto.usdt_bep20}</p>
                     </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {currentDeposit.method === 'CARD' && instructions?.card && (
+              <div className="space-y-4">
+                <p className="text-gray-700">Card Payment Instructions:</p>
+                {instructions.card.identifier_name && (
+                  <p className="text-xs text-gray-500">Account: {instructions.card.identifier_name}</p>
+                )}
+                <div className="bg-gray-50 p-4 rounded space-y-2">
+                  {instructions.card.provider && (
+                    <p><strong>Provider:</strong> {instructions.card.provider}</p>
+                  )}
+                  {instructions.card.instructions && (
+                    <p><strong>Steps:</strong> {instructions.card.instructions}</p>
+                  )}
+                  {instructions.card.payment_link && (
+                    <p>
+                      <strong>Payment Link:</strong>{' '}
+                      <a href={instructions.card.payment_link} className="text-blue-600 underline" target="_blank" rel="noreferrer">
+                        {instructions.card.payment_link}
+                      </a>
+                    </p>
+                  )}
+                  {instructions.card.support_contact && (
+                    <p><strong>Support:</strong> {instructions.card.support_contact}</p>
                   )}
                 </div>
               </div>

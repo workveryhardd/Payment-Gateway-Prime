@@ -111,30 +111,20 @@ Payment Gateway/
 3. **Configure Environment:**
    ```bash
    cp .env.example .env
-   # Edit .env with your database and Redis URLs
+   # Edit .env with your Redis URL, SECRET_KEY, and DATA_FILE_PATH
    ```
 
-4. **Setup Database:**
-   ```bash
-   # Create PostgreSQL database
-   createdb deposit_db
-   
-   # Run migrations
-   alembic revision --autogenerate -m "Initial migration"
-   alembic upgrade head
-   ```
-
-5. **Start FastAPI Server:**
+4. **Start FastAPI Server:**
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-6. **Start Celery Worker (in separate terminal):**
+5. **Start Celery Worker (in separate terminal):**
    ```bash
    celery -A app.core.celery_app worker --loglevel=info
    ```
 
-7. **Start Celery Beat (in separate terminal):**
+6. **Start Celery Beat (in separate terminal):**
    ```bash
    celery -A app.core.celery_app beat --loglevel=info
    ```

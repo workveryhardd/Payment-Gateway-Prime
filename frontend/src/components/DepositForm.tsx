@@ -13,8 +13,10 @@ interface DepositFormProps {
   onSuccess: (deposit: Deposit) => void;
 }
 
+type DepositMethod = 'UPI' | 'BANK' | 'CRYPTO' | 'CARD';
+
 export default function DepositForm({ onSuccess }: DepositFormProps) {
-  const [method, setMethod] = useState<'UPI' | 'BANK' | 'CRYPTO'>('UPI');
+  const [method, setMethod] = useState<DepositMethod>('UPI');
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,12 +49,13 @@ export default function DepositForm({ onSuccess }: DepositFormProps) {
         </label>
         <select
           value={method}
-          onChange={(e) => setMethod(e.target.value as 'UPI' | 'BANK' | 'CRYPTO')}
+          onChange={(e) => setMethod(e.target.value as DepositMethod)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="UPI">UPI</option>
           <option value="BANK">Bank Transfer (NEFT/IMPS/RTGS)</option>
           <option value="CRYPTO">Crypto</option>
+          <option value="CARD">Credit / Debit Card</option>
         </select>
       </div>
       <div className="mb-4">

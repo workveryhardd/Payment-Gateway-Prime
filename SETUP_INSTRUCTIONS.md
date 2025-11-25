@@ -69,9 +69,8 @@ pip install -r requirements.txt
 
 **What this installs:**
 - FastAPI (web framework)
-- SQLAlchemy (database ORM)
-- Alembic (database migrations)
 - Pydantic (data validation)
+- Celery/Redis clients
 - And other required packages
 
 **Expected output:** Should show "Successfully installed..." for all packages.
@@ -92,10 +91,10 @@ cp .env.example .env      # Linux/Mac
 
 **Edit `.env` file:**
 ```env
-DATABASE_URL=sqlite:///./deposit_db.sqlite
 REDIS_URL=redis://localhost:6379/0
 SECRET_KEY=your-secret-key-change-in-production-min-32-chars
 ACCESS_TOKEN_EXPIRE_MINUTES=30
+DATA_FILE_PATH=backend/data/data_store.json
 ```
 
 **Generate a secure SECRET_KEY (optional):**
@@ -105,35 +104,10 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 Copy the output and paste it as `SECRET_KEY` in `.env`.
 
 **Note:** 
-- SQLite is already configured (no database server needed!)
+- The backend now uses a JSON file (see `DATA_FILE_PATH`) for persistence, so no database server or migrations are needed.
 - SECRET_KEY has a default value, so this step is optional
 
-### Step 6: Run Database Migrations
-
-```bash
-alembic upgrade head
-```
-
-**What this does:**
-- Creates the database file (`deposit_db.sqlite`)
-- Creates all tables (users, deposits, incoming_ledger)
-
-**Expected output:**
-```
-INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
-INFO  [alembic.runtime.migration] Running upgrade  -> a429e3dbeb86, Initial migration
-```
-
-**Verify database was created:**
-```bash
-# Windows
-dir deposit_db.sqlite
-
-# Linux/Mac
-ls -la deposit_db.sqlite
-```
-
-### Step 7: Start the Backend Server
+### Step 6: Start the Backend Server
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -431,12 +405,11 @@ Payment Gateway/
 │   ├── app/
 │   │   ├── api/          # API endpoints
 │   │   ├── core/         # Configuration
-│   │   ├── models/       # Database models
+│   │   ├── models/       # Shared enums / types
 │   │   └── ...
-│   ├── alembic/          # Database migrations
 │   ├── .env              # Environment variables
 │   ├── requirements.txt  # Python dependencies
-│   └── deposit_db.sqlite # SQLite database (created after migration)
+│   └── data_store.json   # JSON persistence file (auto-created)
 │
 └── frontend/
     ├── src/
@@ -452,7 +425,7 @@ Payment Gateway/
 ## Important Notes
 
 1. **Authentication is DISABLED** - All endpoints are open for testing
-2. **SQLite Database** - No database server needed, file is created automatically
+2. **JSON Storage** - No database server needed, data stays inside `DATA_FILE_PATH`
 3. **Development Mode** - Both servers run in development mode with hot-reload
 4. **CORS Enabled** - Frontend can communicate with backend
 5. **UPI Details** - Configure your UPI ID in `backend/app/assets/upi_details.txt` (see `backend/HOW_TO_CHANGE_UPI_DETAILS.md`)

@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
-from sqlalchemy.orm import Session
 from typing import List, Optional
-from app.core.database import get_db
 from app.core.security import decode_access_token
-from app.models.deposit import Deposit, DepositStatus
-from app.models.incoming_ledger import IncomingLedger
+from app.models.deposit import DepositStatus
 from app.schemas.deposit import DepositResponse
 from app.schemas.incoming_ledger import IncomingLedgerResponse
 from app.utils.logger import logger
+from app.storage import repository
 
 router = APIRouter()
 
@@ -45,25 +43,16 @@ get_current_admin = get_current_admin_bypass
 @router.get("/deposits", response_model=List[DepositResponse])
 def list_deposits(
     status_filter: Optional[DepositStatus] = Query(None, alias="status"),
-    db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin_bypass)
 ):
-    
-    query = db.query(Deposit)
-    if status_filter:
-        query = query.filter(Deposit.status == status_filter)
-    
-    deposits = query.order_by(Deposit.created_at.desc()).all()
-    return deposits
+    return repository.list_deposits(status=status_filter)
 
 @router.post("/deposits/{deposit_id}/approve", response_model=DepositResponse)
 def approve_deposit(
     deposit_id: int,
-    db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin_bypass)
 ):
-    
-    deposit = db.query(Deposit).filter(Deposit.id == deposit_id).first()
+    deposit = repository.get_deposit(deposit_id)
     if not deposit:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -71,46 +60,37 @@ def approve_deposit(
         )
     
     from datetime import datetime
-    deposit.status = DepositStatus.SUCCESS
-    deposit.verified_at = datetime.utcnow()
-    db.commit()
-    db.refresh(deposit)
-    
+    updated = repository.update_deposit(
+        deposit_id,
+        status=DepositStatus.SUCCESS.value,
+        verified_at=datetime.utcnow().isoformat(),
+    )
     logger.info(f"Admin approved deposit {deposit_id}")
-    return deposit
+    return updated
 
 @router.post("/deposits/{deposit_id}/reject", response_model=DepositResponse)
 def reject_deposit(
     deposit_id: int,
-    db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin_bypass)
 ):
-    
-    deposit = db.query(Deposit).filter(Deposit.id == deposit_id).first()
+    deposit = repository.get_deposit(deposit_id)
     if not deposit:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Deposit not found"
         )
     
-    deposit.status = DepositStatus.FAILED
-    db.commit()
-    db.refresh(deposit)
-    
+    updated = repository.update_deposit(
+        deposit_id,
+        status=DepositStatus.FAILED.value,
+    )
     logger.info(f"Admin rejected deposit {deposit_id}")
-    return deposit
+    return updated
 
 @router.get("/incoming-ledger", response_model=List[IncomingLedgerResponse])
 def list_incoming_ledger(
     matched: Optional[bool] = Query(None),
-    db: Session = Depends(get_db),
     _: dict = Depends(get_current_admin_bypass)
 ):
-    
-    query = db.query(IncomingLedger)
-    if matched is not None:
-        query = query.filter(IncomingLedger.matched == matched)
-    
-    entries = query.order_by(IncomingLedger.created_at.desc()).all()
-    return entries
+    return repository.list_incoming_ledger(matched=matched)
 

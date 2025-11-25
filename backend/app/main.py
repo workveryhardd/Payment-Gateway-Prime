@@ -1,34 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.core.database import engine, Base
 from app.api import auth, deposits, admin, payment_info, payment_accounts
-
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-# Create admin user if not exists
-from app.core.database import SessionLocal
-from app.models.user import User
 from app.core.security import get_password_hash
+from app.storage import repository
+
 
 def create_admin_if_not_exists():
-    db = SessionLocal()
-    try:
-        admin = db.query(User).filter(User.email == "vardiano@tech").first()
-        if not admin:
-            admin_user = User(
-                email="vardiano@tech",
-                password_hash=get_password_hash("Vardiano1"),
-                is_admin=True
-            )
-            db.add(admin_user)
-            db.commit()
-            print("✅ Admin user created: vardiano@tech / Vardiano1")
-    except Exception as e:
-        print(f"Note: {e}")
-    finally:
-        db.close()
+    """Ensure the default admin user exists in the JSON store."""
+    repository.ensure_admin_exists(
+        email="vardiano@tech",
+        password_hash=get_password_hash("Vardiano1"),
+    )
+
 
 create_admin_if_not_exists()
 

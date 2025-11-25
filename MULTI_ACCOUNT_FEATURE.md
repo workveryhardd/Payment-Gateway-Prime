@@ -1,7 +1,7 @@
 # Multi-Account Payment Feature
 
 ## Overview
-This feature allows you to manage multiple payment accounts (UPI, Bank, Crypto) and switch between them dynamically. Only approved and activated accounts are shown to users when they make payments.
+This feature allows you to manage multiple payment accounts (UPI, Bank, Crypto, Card) and switch between them dynamically. Only approved and activated accounts are shown to users when they make payments.
 
 ## Features
 
@@ -9,6 +9,7 @@ This feature allows you to manage multiple payment accounts (UPI, Bank, Crypto) 
    - Upload multiple UPI accounts
    - Upload multiple Bank accounts
    - Upload multiple Crypto wallet sets
+   - Upload multiple Card gateway configurations
    - Each account has a unique `identifier_name` (e.g., "id1", "main_bank", "backup_crypto")
 
 ### 2. **Admin Management**
@@ -60,6 +61,14 @@ Create a JSON file with this structure:
       "usdt_erc20": "0xExampleERC20Address00000000000000000000",
       "usdt_bep20": "0xExampleBSCAddress000000000000000000000"
     }
+  ],
+  "card": [
+    {
+      "identifier_name": "gateway_a",
+      "provider": "Stripe",
+      "instructions": "Share this hosted link with customers",
+      "support_contact": "payments@example.com"
+    }
   ]
 }
 ```
@@ -86,6 +95,10 @@ Create a JSON file with this structure:
 - `usdt_trc20` (optional): USDT on Tron
 - `usdt_erc20` (optional): USDT on Ethereum
 - `usdt_bep20` (optional): USDT on BSC
+
+#### Card Accounts
+- `identifier_name` (required): Unique identifier like "stripe_primary"
+- Any additional fields you need to describe the gateway (e.g., `provider`, `instructions`, `support_contact`, `payment_link`)
 
 ## How to Use
 
@@ -162,5 +175,5 @@ Create a JSON file with this structure:
   - Relative path from project root: `"backend/app/assets/qr.jpg"`
   - Absolute path: `"C:/path/to/qr.jpg"`
 - If no active account exists, default values are shown
-- All account details are stored as JSON in the database
+- All account details are stored in the JSON data store (no external DB needed)
 

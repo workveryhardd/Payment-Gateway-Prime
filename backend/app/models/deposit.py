@@ -5,6 +5,7 @@ class DepositMethod(str, enum.Enum):
     BANK = "BANK"
     CRYPTO = "CRYPTO"
     CARD = "CARD"
+    PAYPAL = "PAYPAL"
 
 class DepositStatus(str, enum.Enum):
     PENDING = "PENDING"

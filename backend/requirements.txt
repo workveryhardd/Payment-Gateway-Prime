@@ -10,4 +10,5 @@ bcrypt==4.2.0
 celery==5.4.0
 redis==5.2.0
 python-multipart==0.0.12
+requests==2.32.3
 

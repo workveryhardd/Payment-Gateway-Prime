@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     ETHERSCAN_API_KEY: Optional[str] = None
     BSCSCAN_API_KEY: Optional[str] = None
     DATA_FILE_PATH: str = "backend/data/data_store.json"
+    # PayPal credentials (baked in for seamless integration)
+    PAYPAL_CLIENT_ID: str = "AUBLhI7FwQ8nAYAJKSxvC0Wtz-Tt3HqmEzn8W01eUKTKccUqudyy9gNi2LHNjUWxtJMPxZX86poGWvrC"
+    PAYPAL_SECRET: str = "EFpS4Ns_81GrQFt8zXWooOZbbHB_h55bg-pzCMkHldQzisq6fyPlEsm8G98aCCIPe7K28DQXYx7K9wV0"
+    PAYPAL_MODE: str = "live"  # Use "sandbox" for testing
     
     model_config = SettingsConfigDict(
         env_file=".env",

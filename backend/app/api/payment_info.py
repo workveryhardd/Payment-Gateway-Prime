@@ -16,6 +16,7 @@ def get_payment_instructions():
     
     # Ensure all expected keys exist
     active_accounts.setdefault("card", None)
+    active_accounts.setdefault("paypal", None)
     
     # Fallback to defaults if no active accounts
     if not active_accounts["upi"]:
@@ -48,6 +49,13 @@ def get_payment_instructions():
         active_accounts["card"] = {
             "provider": "Card Gateway",
             "instructions": "Share payment link sent by support.",
+            "identifier_name": "default"
+        }
+    
+    if not active_accounts["paypal"]:
+        active_accounts["paypal"] = {
+            "enabled": True,
+            "message": "Pay securely with your preferred payment method",
             "identifier_name": "default"
         }
     

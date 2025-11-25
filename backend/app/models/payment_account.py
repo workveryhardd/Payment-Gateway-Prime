@@ -5,6 +5,7 @@ class PaymentAccountType(str, enum.Enum):
     BANK = "BANK"
     CRYPTO = "CRYPTO"
     CARD = "CARD"
+    PAYPAL = "PAYPAL"
 
 class PaymentAccountStatus(str, enum.Enum):
     PENDING = "PENDING"

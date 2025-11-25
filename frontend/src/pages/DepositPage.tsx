@@ -19,7 +19,44 @@ export default function DepositPage() {
 
   useEffect(() => {
     fetchInstructions();
+    
+    // Handle PayPal return
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentId = urlParams.get('paymentId');
+    const payerId = urlParams.get('PayerID');
+    const depositId = urlParams.get('deposit_id');
+    const paymentSuccess = urlParams.get('payment_success');
+    const paymentCancelled = urlParams.get('payment_cancelled');
+    
+    if (paymentSuccess === 'true' && paymentId && payerId && depositId) {
+      // Execute PayPal payment
+      handlePayPalExecute(parseInt(depositId), paymentId, payerId);
+    } else if (paymentCancelled === 'true') {
+      setError('Payment was cancelled. Please try again.');
+    }
   }, []);
+  
+  const handlePayPalExecute = async (depositId: number, paymentId: string, payerId: string) => {
+    try {
+      setLoading(true);
+      const response = await api.post('/paypal/execute', {
+        payment_id: paymentId,
+        payer_id: payerId,
+        deposit_id: depositId,
+      });
+      
+      if (response.data.success) {
+        alert('Payment completed successfully!');
+        setCurrentDeposit(null);
+        // Clean URL
+        window.history.replaceState({}, document.title, '/deposit');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to complete payment');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchInstructions = async () => {
     try {
@@ -51,8 +88,31 @@ export default function DepositPage() {
     }
   };
 
-  const handleDepositCreated = (deposit: Deposit) => {
+  const handleDepositCreated = async (deposit: Deposit) => {
     setCurrentDeposit(deposit);
+    
+    // If PayPal, create payment and redirect
+    if (deposit.method === 'PAYPAL') {
+      try {
+        setLoading(true);
+        const response = await api.post('/paypal/create', {
+          amount: deposit.amount,
+          currency: 'USD',
+          description: `Payment for Deposit #${deposit.id}`,
+          deposit_id: deposit.id,
+          return_url: `${window.location.origin}/deposit?payment_success=true&deposit_id=${deposit.id}`,
+          cancel_url: `${window.location.origin}/deposit?payment_cancelled=true&deposit_id=${deposit.id}`,
+        });
+        
+        // Redirect to PayPal approval URL
+        if (response.data.approval_url) {
+          window.location.href = response.data.approval_url;
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.detail || 'Failed to create PayPal payment');
+        setLoading(false);
+      }
+    }
   };
 
   const handleSubmitProof = async (e: React.FormEvent) => {

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, deposits, admin, payment_info, payment_accounts
+from app.api import auth, deposits, admin, payment_info, payment_accounts, paypal
 from app.core.security import get_password_hash
 from app.storage import repository
 
@@ -21,7 +21,12 @@ app = FastAPI(title="Deposit System API", version="1.0.0")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://localhost:3000",
+        "https://payment-gateway-prime-pp3zpnu9b-workveryhardds-projects.vercel.app",
+        "https://*.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,6 +38,7 @@ app.include_router(deposits.router, prefix="/deposits", tags=["deposits"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(payment_info.router, prefix="/payment", tags=["payment"])
 app.include_router(payment_accounts.router, prefix="/admin/payment-accounts", tags=["payment-accounts"])
+app.include_router(paypal.router, prefix="/paypal", tags=["paypal"])
 
 @app.get("/")
 def root():

@@ -19,13 +19,59 @@
       "meta_data": null,
       "created_at": "2025-11-25T18:07:45.320118",
       "verified_at": null
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "method": "PAYPAL",
+      "amount": 5.0,
+      "utr_or_hash": null,
+      "status": "PENDING",
+      "meta_data": null,
+      "created_at": "2025-11-25T18:52:23.467980",
+      "verified_at": null
+    },
+    {
+      "id": 3,
+      "user_id": 1,
+      "method": "PAYPAL",
+      "amount": 6.0,
+      "utr_or_hash": null,
+      "status": "PENDING",
+      "meta_data": null,
+      "created_at": "2025-11-25T18:54:45.449387",
+      "verified_at": null
+    },
+    {
+      "id": 4,
+      "user_id": 1,
+      "method": "PAYPAL",
+      "amount": 7.0,
+      "utr_or_hash": null,
+      "status": "PENDING",
+      "meta_data": null,
+      "created_at": "2025-11-25T18:54:58.198795",
+      "verified_at": null
+    },
+    {
+      "id": 5,
+      "user_id": 1,
+      "method": "PAYPAL",
+      "amount": 6.0,
+      "utr_or_hash": null,
+      "status": "PENDING",
+      "meta_data": {
+        "paypal_payment_id": "PAYID-NES7YJQ83E51295KN629243E"
+      },
+      "created_at": "2025-11-25T18:57:41.604158",
+      "verified_at": null
     }
   ],
   "payment_accounts": [],
   "incoming_ledger": [],
   "counters": {
     "users": 1,
-    "deposits": 1,
+    "deposits": 5,
     "payment_accounts": 0,
     "incoming_ledger": 0
   }

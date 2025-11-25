@@ -18,15 +18,10 @@ create_admin_if_not_exists()
 
 app = FastAPI(title="Deposit System API", version="1.0.0")
 
-# CORS middleware
+# CORS middleware - Allow all origins for production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", 
-        "http://localhost:3000",
-        "https://payment-gateway-prime-pp3zpnu9b-workveryhardds-projects.vercel.app",
-        "https://*.vercel.app"
-    ],
+    allow_origins=["*"],  # Allow all origins to fix CORS issues
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

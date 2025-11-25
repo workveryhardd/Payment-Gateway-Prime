@@ -95,6 +95,8 @@ export default function DepositPage() {
     if (deposit.method === 'PAYPAL') {
       try {
         setLoading(true);
+        setError(''); // Clear any previous errors
+        
         const response = await api.post('/paypal/create', {
           amount: deposit.amount,
           currency: 'USD',
@@ -104,13 +106,21 @@ export default function DepositPage() {
           cancel_url: `${window.location.origin}/deposit?payment_cancelled=true&deposit_id=${deposit.id}`,
         });
         
+        console.log('PayPal payment created:', response.data);
+        
         // Redirect to PayPal approval URL
-        if (response.data.approval_url) {
+        if (response.data && response.data.approval_url) {
+          // Immediate redirect
           window.location.href = response.data.approval_url;
+        } else {
+          throw new Error('No approval URL received from payment gateway');
         }
       } catch (err: any) {
-        setError(err.response?.data?.detail || 'Failed to create PayPal payment');
+        console.error('PayPal payment creation error:', err);
+        const errorMessage = err.response?.data?.detail || err.message || 'Failed to create payment. Please try again.';
+        setError(errorMessage);
         setLoading(false);
+        // Don't set currentDeposit to null so user can see the error
       }
     }
   };
@@ -263,40 +273,78 @@ export default function DepositPage() {
                 </div>
               </div>
             )}
+            {currentDeposit.method === 'PAYPAL' && (
+              <div className="space-y-4">
+                {error ? (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-red-800 font-semibold mb-2">Payment Error</p>
+                    <p className="text-red-700 text-sm">{error}</p>
+                    <button
+                      onClick={() => {
+                        setError('');
+                        setCurrentDeposit(null);
+                      }}
+                      className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-800 font-semibold mb-2">Redirecting to secure payment...</p>
+                    <p className="text-blue-700 text-sm">
+                      You will be redirected to complete your payment securely. 
+                      Your payment will be processed immediately and securely.
+                    </p>
+                    {loading && (
+                      <div className="mt-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        <p className="text-center text-blue-600 text-sm mt-2">Creating payment...</p>
+                      </div>
+                    )}
+                    {!loading && (
+                      <p className="text-blue-600 text-sm mt-2">If you are not redirected automatically, please check the console for errors.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Submit Payment Proof</h2>
-            {error && <div className="mb-4 text-red-600">{error}</div>}
-            <form onSubmit={handleSubmitProof}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  UTR / Reference Number / Transaction Hash
-                </label>
-                <input
-                  type="text"
-                  value={utr}
-                  onChange={(e) => setUtr(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="Enter UTR, reference number, or transaction hash"
-                />
-              </div>
+          {currentDeposit.method !== 'PAYPAL' && (
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h2 className="text-xl font-semibold mb-4">Submit Payment Proof</h2>
+              {error && <div className="mb-4 text-red-600">{error}</div>}
+              <form onSubmit={handleSubmitProof}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    UTR / Reference Number / Transaction Hash
+                  </label>
+                  <input
+                    type="text"
+                    value={utr}
+                    onChange={(e) => setUtr(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Enter UTR, reference number, or transaction hash"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Submitting...' : 'Submit Proof'}
+                </button>
+              </form>
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                onClick={() => setCurrentDeposit(null)}
+                className="mt-4 w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
               >
-                {loading ? 'Submitting...' : 'Submit Proof'}
+                Create Another Deposit
               </button>
-            </form>
-            <button
-              onClick={() => setCurrentDeposit(null)}
-              className="mt-4 w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
-            >
-              Create Another Deposit
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

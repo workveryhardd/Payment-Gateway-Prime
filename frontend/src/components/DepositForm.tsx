@@ -13,7 +13,7 @@ interface DepositFormProps {
   onSuccess: (deposit: Deposit) => void;
 }
 
-type DepositMethod = 'UPI' | 'BANK' | 'CRYPTO' | 'CARD';
+type DepositMethod = 'UPI' | 'BANK' | 'CRYPTO' | 'CARD' | 'PAYPAL';
 
 export default function DepositForm({ onSuccess }: DepositFormProps) {
   const [method, setMethod] = useState<DepositMethod>('UPI');
@@ -56,6 +56,7 @@ export default function DepositForm({ onSuccess }: DepositFormProps) {
           <option value="BANK">Bank Transfer (NEFT/IMPS/RTGS)</option>
           <option value="CRYPTO">Crypto</option>
           <option value="CARD">Credit / Debit Card</option>
+          <option value="PAYPAL">Secure Online Payment</option>
         </select>
       </div>
       <div className="mb-4">
